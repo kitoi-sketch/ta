@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>タロット総合鑑定</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@300;400;500;600&display=swap');
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8cc7a;
+    --gold-dark: #8b6914;
+    --navy: #0a0e1a;
+    --navy-mid: #0f1628;
+    --purple: #1a0a2e;
+    --purple-mid: #2d1b5e;
+    --text-light: #e8dfc8;
+    --text-muted: #9b8f7a;
+    --panel-bg: rgba(15, 22, 40, 0.75);
+    --panel-border: rgba(201, 168, 76, 0.35);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Serif JP', serif;
+    background: linear-gradient(160deg, #050810 0%, #0a0e1a 30%, #120828 60%, #0a0e1a 100%);
+    color: var(--text-light);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ===== 星空背景 ===== */
+  .stars-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--min-op, 0.2); transform: scale(1); }
+    50% { opacity: var(--max-op, 0.9); transform: scale(1.3); }
+  }
+
+  .nebula {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .nebula-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(80,20,160,0.18) 0%, transparent 70%);
+    top: -100px; right: -100px;
+  }
+
+  .nebula-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(20,60,130,0.15) 0%, transparent 70%);
+    bottom: 200px; left: -150px;
+  }
+
+  .nebula-3 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(100,40,180,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ===== 共通ラッパー ===== */
+  .page-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  /* ===== ヘッダー ===== */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 60px;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--gold));
+  }
+
+  .moon-deco {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    display: block;
+    filter: drop-shadow(0 0 20px rgba(201,168,76,0.6));
+    animation: moonFloat 5s ease-in-out infinite;
+  }
+
+  @keyframes moonFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .hero-eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(2.2rem, 6vw, 3.8rem);
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    line-height: 1.3;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    text-shadow: none;
+  }
+
+  .hero-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 20px auto;
+    max-width: 400px;
+  }
+
+  .hero-divider::before,
+  .hero-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .hero-divider span {
+    color: var(--gold);
+    font-size: 1.2rem;
+  }
+
+  .hero-sub {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    font-weight: 300;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    line-height: 1.8;
+  }
+
+  /* 装飾カード背景 */
+  .deco-cards {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .deco-card {
+    position: absolute;
+    border: 1px solid rgba(201,168,76,0.12);
+    border-radius: 8px;
+    background: rgba(201,168,76,0.03);
+    backdrop-filter: blur(2px);
+    animation: floatCard var(--dur,8s) ease-in-out infinite;
+    animation-delay: var(--delay,0s);
+  }
+
+  @keyframes floatCard {
+    0%,100% { transform: translateY(0) rotate(var(--rot,10deg)); opacity: var(--op,0.4); }
+    50% { transform: translateY(-20px) rotate(calc(var(--rot,10deg) + 3deg)); opacity: calc(var(--op,0.4) + 0.15); }
+  }
+
+  /* ===== フォームセクション ===== */
+  .form-section {
+    margin-bottom: 60px;
+  }
+
+  .glass-panel {
+    background: rgba(10, 18, 40, 0.7);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 50px 40px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .glass-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .section-title h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 400;
+    color: var(--gold-light);
+    letter-spacing: 0.2em;
+    margin-bottom: 8px;
+  }
+
+  .section-title p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 580px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .glass-panel { padding: 36px 24px; }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  input[type="date"],
+  select {
+    background: rgba(5, 10, 25, 0.8);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 8px;
+    color: var(--text-light);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    padding: 14px 18px;
+    width: 100%;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.6) sepia(1) hue-rotate(5deg) saturate(3);
+    cursor: pointer;
+  }
+
+  input[type="date"]:focus,
+  select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12), 0 0 20px rgba(201,168,76,0.08);
+  }
+
+  select option {
+    background: #0a0e1a;
+    color: var(--text-light);
+  }
+
+  .gender-group {
+    display: flex;
+    gap: 12px;
+  }
+
+  .gender-option {
+    flex: 1;
+  }
+
+  .gender-option input[type="radio"] {
+    display: none;
+  }
+
+  .gender-option label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 10px;
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: none;
+    transition: all 0.3s;
+    background: rgba(5, 10, 25, 0.6);
+  }
+
+  .gender-option input[type="radio"]:checked + label {
+    border-color: var(--gold);
+    color: var(--gold-light);
+    background: rgba(201,168,76,0.1);
+    box-shadow: 0 0 15px rgba(201,168,76,0.1);
+  }
+
+  .gender-option label:hover {
+    border-color: rgba(201,168,76,0.6);
+    color: var(--text-light);
+  }
+
+  .submit-btn {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 18px 40px;
+    background: linear-gradient(135deg, #8b6914 0%, #c9a84c 50%, #8b6914 100%);
+    border: none;
+    border-radius: 50px;
+    color: #0a0818;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 4px 30px rgba(201,168,76,0.3);
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%);
+    transform: translateX(-100%) rotate(45deg);
+    transition: transform 0.6s;
+  }
+
+  .submit-btn:hover::before { transform: translateX(100%) rotate(45deg); }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(201,168,76,0.45); }
+  .submit-btn:active { transform: translateY(0); }
+
+  /* ===== 結果エリア ===== */
+  #result-area {
+    display: none;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  #result-area.visible {
+    display: block;
+  }
+
+  #result-area.animated {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .result-header {
+    text-align: center;
+    padding: 50px 0 40px;
+    position: relative;
+  }
+
+  .result-name-badge {
+    display: inline-block;
+    border: 1px solid var(--panel-border);
+    border-radius: 50px;
+    padding: 8px 28px;
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    margin-bottom: 24px;
+    background: rgba(201,168,76,0.06);
+  }
+
+  .result-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 300;
+    color: var(--gold-light);
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+  }
+
+  /* ===== 運気カードグリッド ===== */
+  .fortune-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .fortune-grid { grid-template-columns: 1fr; }
+  }
+
+  .fortune-card {
+    background: rgba(10, 18, 40, 0.75);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .fortune-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .fortune-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(201,168,76,0.2);
+  }
+
+  .fortune-card-glow {
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    filter: blur(50px);
+    pointer-events: none;
+    opacity: 0.25;
+  }
+
+  .fortune-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    display: block;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  .fortune-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .fortune-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-light);
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .fortune-subtitle {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+  }
+
+  .stars-rating {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  .star-icon {
+    font-size: 0.85rem;
+    color: var(--gold);
+    filter: drop-shadow(0 0 4px rgba(201,168,76,0.6));
+  }
+
+  .star-icon.empty {
+    color: rgba(201,168,76,0.2);
+    filter: none;
+  }
+
+  .fortune-divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--panel-border), transparent);
+    margin-bottom: 14px;
+  }
+
+  .fortune-text {
+    font-size: 0.9rem;
+    line-height: 1.9;
+    color: #c8bfae;
+    font-weight: 300;
+  }
+
+  /* ===== パーソナルカード ===== */
+  .personal-card-section {
+    margin-bottom: 40px;
+  }
+
+  .section-heading {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .section-heading .label {
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .section-heading h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 400;
+    color: var(--gold-light);
+    letter-spacing: 0.15em;
+  }
+
+  .tarot-cards-display {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .tarot-card {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.4s, box-shadow 0.4s;
+    cursor: default;
+  }
+
+  .tarot-card:hover {
+    transform: translateY(-8px) rotate(-1deg);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 40px rgba(201,168,76,0.2);
+  }
+
+  .tarot-card.main-card {
+    width: 200px;
+    border: 2px solid var(--gold);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(201,168,76,0.15);
+  }
+
+  .tarot-card.sub-card {
+    width: 150px;
+    border: 1px solid rgba(201,168,76,0.55);
+    box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+    align-self: flex-end;
+  }
+
+  .tarot-card-inner {
+    background: linear-gradient(160deg, #0d1530 0%, #1a0a2e 50%, #0a0e1a 100%);
+    padding: 20px 16px;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .tarot-card.sub-card .tarot-card-inner {
+    min-height: 210px;
+    padding: 16px 12px;
+  }
+
+  /* カード内の装飾パターン */
+  .tarot-card-inner::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 8px;
+    pointer-events: none;
+  }
+
+  .card-roman {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    font-style: italic;
+  }
+
+  .tarot-card.sub-card .card-roman {
+    font-size: 0.7rem;
+  }
+
+  .card-glyph {
+    font-size: 3.5rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 16px rgba(201,168,76,0.5));
+    animation: glyphPulse 4s ease-in-out infinite;
+    margin: 4px 0;
+  }
+
+  .tarot-card.sub-card .card-glyph {
+    font-size: 2.5rem;
+  }
+
+  @keyframes glyphPulse {
+    0%,100% { filter: drop-shadow(0 0 16px rgba(201,168,76,0.5)); }
+    50% { filter: drop-shadow(0 0 28px rgba(201,168,76,0.8)); }
+  }
+
+  .card-name-jp {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gold-light);
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  .tarot-card.sub-card .card-name-jp {
+    font-size: 0.9rem;
+  }
+
+  .card-name-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-align: center;
+    font-style: italic;
+  }
+
+  .tarot-card.sub-card .card-name-en {
+    font-size: 0.62rem;
+  }
+
+  .card-role-badge {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+    color: #0a0818;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .personal-card-desc {
+    background: rgba(10, 18, 40, 0.7);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .personal-card-desc::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .personal-card-desc p {
+    font-size: 0.95rem;
+    line-height: 2;
+    color: #c8bfae;
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  /* ===== 長所・短所・注意点 ===== */
+  .traits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 700px) {
+    .traits-grid { grid-template-columns: 1fr; }
+  }
+
+  .trait-panel {
+    background: rgba(10, 18, 40, 0.7);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 28px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .trait-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .trait-panel.strength::before { background: linear-gradient(90deg, transparent, #4a9eff, transparent); }
+  .trait-panel.weakness::before { background: linear-gradient(90deg, transparent, #c94c4c, transparent); }
+  .trait-panel.caution::before { background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+
+  .trait-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .trait-icon { font-size: 1.4rem; }
+
+  .trait-title {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text-light);
+  }
+
+  .trait-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .trait-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: #b8b0a0;
+    font-weight: 300;
+  }
+
+  .trait-list li::before {
+    content: '◆';
+    font-size: 0.5rem;
+    color: var(--gold);
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .trait-panel.weakness .trait-list li::before { color: #c94c4c; }
+  .trait-panel.caution .trait-list li::before { color: var(--gold); }
+
+  /* ===== 総合メッセージ ===== */
+  .final-message {
+    background: linear-gradient(135deg, rgba(15, 22, 50, 0.85) 0%, rgba(26, 10, 46, 0.85) 100%);
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    padding: 50px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .final-message::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .final-message-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .final-message-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+    display: block;
+    filter: drop-shadow(0 0 16px rgba(201,168,76,0.6));
+  }
+
+  .final-message p {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    line-height: 2;
+    color: var(--text-light);
+    font-weight: 300;
+    font-style: italic;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ===== フッター ===== */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 30px 20px 50px;
+    border-top: 1px solid rgba(201,168,76,0.1);
+  }
+
+  footer p {
+    font-size: 0.75rem;
+    color: rgba(155,143,122,0.5);
+    letter-spacing: 0.2em;
+    line-height: 2;
+  }
+
+  /* ===== エラー ===== */
+  .error-msg {
+    color: #e05050;
+    font-size: 0.82rem;
+    text-align: center;
+    margin-top: 16px;
+    letter-spacing: 0.1em;
+  }
+
+  /* ===== ローディング ===== */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 8, 16, 0.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .loading-overlay.active {
+    display: flex;
+  }
+
+  .loading-orb {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--gold);
+    border-right-color: rgba(201,168,76,0.4);
+    animation: spin 1.2s linear infinite;
+    position: relative;
+  }
+
+  .loading-orb::after {
+    content: '✦';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--gold);
+    animation: counter-spin 1.2s linear infinite;
+    filter: drop-shadow(0 0 10px var(--gold));
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes counter-spin { to { transform: rotate(-360deg); } }
+
+  .loading-text {
+    font-size: 0.85rem;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+  }
+
+  /* ===== スクロールヒント ===== */
+  .scroll-hint {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    color: var(--text-muted);
+    animation: fadeInUp 1s ease 1.5s both;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== カードデコレーション（背景） ===== */
+  .card-ornament {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent);
+    margin: 40px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- 星空 -->
+<div class="stars-layer" id="starsLayer"></div>
+<div class="nebula nebula-1"></div>
+<div class="nebula nebula-2"></div>
+<div class="nebula nebula-3"></div>
+
+<!-- ローディング -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-orb"></div>
+  <p class="loading-text">星の導きを読み解いています…</p>
+</div>
+
+<div class="page-wrapper">
+
+  <!-- ヘッダー -->
+  <header class="hero">
+    <div class="deco-cards" id="decoCards"></div>
+    <span class="moon-deco">🌙</span>
+    <p class="hero-eyebrow">Tarot Grand Reading</p>
+    <h1 class="hero-title">タロット総合鑑定</h1>
+    <div class="hero-divider"><span>✦</span></div>
+    <p class="hero-sub">あなたの運命を、いま静かに読み解きます</p>
+  </header>
+
+  <div class="card-ornament"></div>
+
+  <!-- 入力フォーム -->
+  <section class="form-section">
+    <div class="glass-panel">
+      <div class="section-title">
+        <h2>生年月日と性別をお入れください</h2>
+        <p>Sacred Information · 鑑定情報</p>
+      </div>
+
+      <form id="tarotForm" novalidate>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="birthdate">生年月日</label>
+            <input type="date" id="birthdate" min="1900-01-01" max="2099-12-31" required>
+          </div>
+
+          <div class="form-group full-width">
+            <label>性別</label>
+            <div class="gender-group">
+              <div class="gender-option">
+                <input type="radio" id="male" name="gender" value="male" checked>
+                <label for="male">男性</label>
+              </div>
+              <div class="gender-option">
+                <input type="radio" id="female" name="gender" value="female">
+                <label for="female">女性</label>
+              </div>
+              <div class="gender-option">
+                <input type="radio" id="other" name="gender" value="other">
+                <label for="other">その他・回答しない</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="error-msg" id="errorMsg" style="display:none"></p>
+        <button type="submit" class="submit-btn">✦ 鑑定する ✦</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 結果エリア -->
+  <div id="result-area">
+
+    <!-- 結果ヘッダー -->
+    <div class="result-header">
+      <div class="result-name-badge" id="resultBadge">鑑定結果</div>
+      <h2>あなたへの鑑定書</h2>
+      <div class="hero-divider"><span>✦</span></div>
+    </div>
+
+    <div class="card-ornament"></div>
+
+    <!-- 運気カード4枚 -->
+    <div class="fortune-grid" id="fortuneGrid">
+      <!-- JSで生成 -->
+    </div>
+
+    <div class="card-ornament"></div>
+
+    <!-- パーソナルカード -->
+    <section class="personal-card-section">
+      <div class="section-heading">
+        <span class="label">Personal Card</span>
+        <h3>あなたのパーソナルカード</h3>
+      </div>
+
+      <div class="tarot-cards-display" id="tarotCardsDisplay">
+        <!-- JSで生成 -->
+      </div>
+
+      <div class="personal-card-desc" id="personalCardDesc">
+        <!-- JSで生成 -->
+      </div>
+    </section>
+
+    <div class="card-ornament"></div>
+
+    <!-- 長所・短所・注意点 -->
+    <section>
+      <div class="section-heading">
+        <span class="label">Character Reading</span>
+        <h3>あなたの素質と課題</h3>
+      </div>
+      <div class="traits-grid" id="traitsGrid">
+        <!-- JSで生成 -->
+      </div>
+    </section>
+
+    <div class="card-ornament"></div>
+
+    <!-- 総合メッセージ -->
+    <div class="final-message" id="finalMessage">
+      <!-- JSで生成 -->
+    </div>
+
+    <div class="scroll-hint">― 鑑定終了 · Reading Complete ―</div>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<footer>
+  <p>
+    タロット総合鑑定 · Tarot Grand Reading<br>
+    ※本鑑定はエンターテインメント目的であり、医療・法律・投資等の専門判断をするものではありません。
+  </p>
+</footer>
+
+<script>
+// ===== 星空生成 =====
+(function generateStars() {
+  const layer = document.getElementById('starsLayer');
+  const count = 180;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*100}%; left:${Math.random()*100}%;
+      --dur:${Math.random()*4+2}s;
+      --delay:${Math.random()*5}s;
+      --min-op:${Math.random()*0.2+0.1};
+      --max-op:${Math.random()*0.5+0.5};
+    `;
+    layer.appendChild(s);
+  }
+})();
+
+// ===== 装飾カード生成 =====
+(function generateDecoCards() {
+  const container = document.getElementById('decoCards');
+  const configs = [
+    { w:50, h:80, top:10, left:5, rot:-15, op:0.3, dur:9, delay:0 },
+    { w:40, h:65, top:20, left:88, rot:12, op:0.25, dur:11, delay:1 },
+    { w:35, h:56, top:60, left:2, rot:-8, op:0.2, dur:8, delay:2 },
+    { w:45, h:72, top:55, left:90, rot:18, op:0.28, dur:10, delay:0.5 },
+    { w:30, h:48, top:80, left:50, rot:-5, op:0.15, dur:12, delay:3 },
+  ];
+  configs.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'deco-card';
+    el.style.cssText = `
+      width:${c.w}px; height:${c.h}px;
+      top:${c.top}%; left:${c.left}%;
+      --rot:${c.rot}deg; --op:${c.op};
+      --dur:${c.dur}s; --delay:${c.delay}s;
+    `;
+    container.appendChild(el);
+  });
+})();
+
+// ===== 大アルカナデータ =====
+const arcana = [
+  null, // 0インデックス未使用
+  { num:'I',   jp:'魔術師',     en:'THE MAGICIAN',      glyph:'⚡', color:'#4a9eff', keywords:['意志力','創造','行動','技術','実現力'] },
+  { num:'II',  jp:'女教皇',     en:'THE HIGH PRIESTESS',glyph:'🌙', color:'#9b7bff', keywords:['直感','神秘','知恵','内省','洞察'] },
+  { num:'III', jp:'女帝',       en:'THE EMPRESS',        glyph:'🌹', color:'#ff7bab', keywords:['豊かさ','愛情','創造性','母性','豊穣'] },
+  { num:'IV',  jp:'皇帝',       en:'THE EMPEROR',        glyph:'👑', color:'#c9a84c', keywords:['権威','安定','責任','実行力','リーダー'] },
+  { num:'V',   jp:'法王',       en:'THE HIEROPHANT',     glyph:'⛪', color:'#7bffcc', keywords:['伝統','教え','信仰','道徳','指導'] },
+  { num:'VI',  jp:'恋人',       en:'THE LOVERS',         glyph:'💫', color:'#ff9b7b', keywords:['愛','選択','調和','絆','誠実'] },
+  { num:'VII', jp:'戦車',       en:'THE CHARIOT',        glyph:'🏆', color:'#4ac9ff', keywords:['勝利','意志','前進','克服','統制'] },
+  { num:'VIII',jp:'力',         en:'STRENGTH',           glyph:'🦁', color:'#ffb84a', keywords:['勇気','忍耐','内なる強さ','優しさ','自制'] },
+  { num:'IX',  jp:'隠者',       en:'THE HERMIT',         glyph:'🕯️', color:'#c8c8ff', keywords:['内省','探求','知恵','孤独','導き'] },
+  { num:'X',   jp:'運命の輪',   en:'WHEEL OF FORTUNE',   glyph:'⚙️', color:'#ffd700', keywords:['転換','運命','循環','チャンス','変化'] },
+  { num:'XI',  jp:'正義',       en:'JUSTICE',            glyph:'⚖️', color:'#7bffaa', keywords:['公正','真実','均衡','誠実','決断'] },
+  { num:'XII', jp:'吊るされた男',en:'THE HANGED MAN',    glyph:'🌊', color:'#7bbfff', keywords:['忍耐','犠牲','視点転換','手放し','洞察'] },
+  { num:'XIII',jp:'死神',       en:'DEATH',              glyph:'🦋', color:'#8866cc', keywords:['変容','終焉と始まり','手放し','転生','更新'] },
+  { num:'XIV', jp:'節制',       en:'TEMPERANCE',         glyph:'✨', color:'#aaffcc', keywords:['調和','バランス','融合','忍耐','癒し'] },
+  { num:'XV',  jp:'悪魔',       en:'THE DEVIL',          glyph:'🔗', color:'#cc4444', keywords:['執着','物質','欲望','束縛からの解放','直視'] },
+  { num:'XVI', jp:'塔',         en:'THE TOWER',          glyph:'⚡', color:'#ff6644', keywords:['崩壊と再生','覚醒','変革','解放','真実'] },
+  { num:'XVII',jp:'星',         en:'THE STAR',           glyph:'⭐', color:'#88ccff', keywords:['希望','癒し','インスピレーション','平和','輝き'] },
+  { num:'XVIII',jp:'月',        en:'THE MOON',           glyph:'🌕', color:'#bbaaff', keywords:['直感','幻想','潜在意識','夢','神秘'] },
+  { num:'XIX', jp:'太陽',       en:'THE SUN',            glyph:'☀️', color:'#ffdd44', keywords:['喜び','成功','活力','明るさ','充実'] },
+  { num:'XX',  jp:'審判',       en:'JUDGEMENT',          glyph:'🎺', color:'#ffaa44', keywords:['覚醒','再生','使命','解放','変容'] },
+  { num:'XXI', jp:'世界',       en:'THE WORLD',          glyph:'🌍', color:'#44ffbb', keywords:['完成','統合','達成','自由','新たな始まり'] },
+  { num:'0',   jp:'愚者',       en:'THE FOOL',           glyph:'🌟', color:'#ffffff', keywords:['自由','可能性','純粋','冒険','新しい出発'] },
+];
+
+function getArcana(n) {
+  if (n === 22 || n === 0) return arcana[22];
+  if (n >= 1 && n <= 21) return arcana[n];
+  return arcana[1];
+}
+
+// ===== カード計算 =====
+function calcPersonalCard(dateStr) {
+  // YYYY-MM-DD
+  const digits = dateStr.replace(/-/g, '').split('').map(Number);
+  let sum = digits.reduce((a, b) => a + b, 0);
+
+  let mainNum = sum;
+  // 22以上で22でなければ還元
+  while (mainNum > 22) {
+    mainNum = String(mainNum).split('').map(Number).reduce((a, b) => a + b, 0);
+  }
+
+  let subNum = null;
+  if (mainNum === 22) {
+    subNum = 4; // 2+2
+  } else if (mainNum >= 10) {
+    const reduced = String(mainNum).split('').map(Number).reduce((a, b) => a + b, 0);
+    if (reduced !== mainNum) subNum = reduced;
+  }
+
+  return { mainNum, subNum, rawSum: sum };
+}
+
+// ===== 運気データ生成 =====
+function generateFortuneData(mainCard, subCard, gender) {
+  const mainKw = mainCard.keywords;
+  const subKw = subCard ? subCard.keywords : [];
+  const g = gender === 'female' ? 'female' : (gender === 'male' ? 'male' : 'neutral');
+
+  const fortunes = {
+    life: {
+      icon: '✦',
+      glowColor: '#4a6fff',
+      label: '人生全般',
+      sublabel: '総合運',
+      stars: 4,
+      texts: {
+        male: `これまで積み重ねてきた経験が、新しい可能性へとつながる時期です。${mainKw[0]}と${mainKw[1]}を活かすことで、次のステージが自然と開けていきます。焦らず、自分の直感と歩んできた道を信じることが大切です。`,
+        female: `これまでの経験と直感が、新しい可能性へと昇華する時期です。${mainKw[0]}という本質的な力を大切にしながら、自分らしい道を歩んでいくことで、豊かな未来が開けていきます。`,
+        neutral: `積み重ねてきたものが新しい可能性へとつながる時期です。${mainKw[0]}と${mainKw[1]}という内なる力を信じ、自分のペースで歩んでいくことで、次のステージが自然と開けていきます。`,
+      }
+    },
+    work: {
+      icon: '👑',
+      glowColor: '#c9a84c',
+      label: '仕事運',
+      sublabel: 'キャリア・お金',
+      stars: 4,
+      texts: {
+        male: `責任ある立場やリーダーシップが求められやすい流れです。${mainKw[3] || mainKw[0]}という資質が周囲から評価され、信頼を集める場面が増えていきます。一人で抱え込みすぎないことが成功の鍵です。`,
+        female: `あなたの${mainKw[0]}と${mainKw[2] || mainKw[1]}が活きる場面が訪れます。これまでの努力が少しずつ形になり、周囲からの評価や信頼も高まっていく時期です。自分の価値を過小評価しないことが大切です。`,
+        neutral: `これまでの努力が評価され、周囲から信頼を集める場面が増えていきます。${mainKw[0]}という本質を大切にしながら、一歩ずつ着実に進むことで、キャリアに良い変化が生まれやすい流れです。`,
+      }
+    },
+    love: {
+      icon: '🌙',
+      glowColor: '#9b4ccc',
+      label: '恋愛運',
+      sublabel: '愛情・パートナーシップ',
+      stars: 3,
+      texts: {
+        male: `心を開いた対話が関係を深める時期です。${mainKw[1] || mainKw[0]}という内なる力が、誠実な縁を引き寄せます。既にご縁がある方は信頼関係を育てることが、新しい出会いを求める方は価値観の合う相手との接点が生まれやすい流れです。`,
+        female: `あなたの${mainKw[0]}と${mainKw[2] || mainKw[1]}が、心地よい縁を引き寄せる時期です。自分らしさを大切にしながら関わることで、深い絆が育まれていきます。直感を信じて、心の声に従ってみてください。`,
+        neutral: `心を開いた対話が関係を深める時期です。自分の${mainKw[0]}という本質を大切にしながら関わることで、真摯な縁が育まれていきます。価値観の合う相手との接点が生まれやすい流れです。`,
+      }
+    },
+    health: {
+      icon: '🌿',
+      glowColor: '#4acc88',
+      label: '健康運',
+      sublabel: '心と体のバランス',
+      stars: 4,
+      texts: {
+        male: `無理を続けるとエネルギーが低下しやすい時期です。睡眠・食事・休息のリズムを整えることで運気が安定します。${mainKw[0]}という力を持続させるために、自分を追い込みすぎず、心身を緩める時間を意識してください。`,
+        female: `心と体のバランスを意識する時期です。${mainKw[0]}という豊かな感性を活かすためにも、十分な休息とリラックスの時間を確保することが大切です。直感が乱れを感じたら、早めに立ち止まる勇気を持ちましょう。`,
+        neutral: `無理を続けるとエネルギーが低下しやすい時期です。睡眠、食事、休息のリズムを整えることで心身の安定が保たれます。自分を追い込みすぎず、心身を緩める時間を意識してください。`,
+      }
+    },
+  };
+
+  return Object.entries(fortunes).map(([key, f]) => ({
+    key,
+    ...f,
+    text: f.texts[g] || f.texts.neutral,
+  }));
+}
+
+// ===== 長所・短所・注意点 =====
+function generateTraits(mainCard, subCard) {
+  const mk = mainCard.keywords;
+  const sk = subCard ? subCard.keywords : [];
+
+  const strengths = [
+    `${mk[0]}という本質的な力がある`,
+    `${mk[1]}に優れ、新しい道を切り開ける`,
+    `${mk[2] || mk[0]}という魅力が自然に人を引きつける`,
+    ...(sk.length ? [`${sk[0]}という社会的な力を持っている`] : []),
+    `変化を恐れず、可能性を信じて進める`,
+  ].slice(0, 5);
+
+  const weaknesses = [
+    `${mk[0]}が強すぎると周囲と衝突することがある`,
+    `感覚に頼りすぎて、計画性が弱まることがある`,
+    ...(sk.length ? [`${sk[0]}を求めるあまり、柔軟性を失うことがある`] : [`こだわりが強くなりすぎることがある`]),
+    `責任感が強く、一人で抱え込みやすい`,
+    `完璧を求めるあまり、行動が遅れることがある`,
+  ].slice(0, 5);
+
+  const cautions = [
+    `${mk[1] || mk[0]}だけで突っ走りすぎないように注意`,
+    `周囲に頼ることも大切にする`,
+    ...(sk.length ? [`${sk[0]}と自分の本音のバランスを意識する`] : [`自分の本音を抑え込みすぎない`]),
+    `変化のサインを見逃さないようにする`,
+    `自分を労わる時間を定期的に確保する`,
+  ].slice(0, 5);
+
+  return { strengths, weaknesses, cautions };
+}
+
+// ===== 総合メッセージ =====
+function generateFinalMessage(mainCard, subCard) {
+  const mk = mainCard.jp;
+  const sk = subCard ? subCard.jp : null;
+  if (sk) {
+    return `${mk}の魂と${sk}の使命を持つあなたには、大きな可能性と輝く未来が広がっています。自分自身の本質を信じ、心の声に従って進んでいきましょう。あなたの歩む道は、確かな光で照らされています。`;
+  }
+  return `${mk}の魂を持つあなたには、大きな可能性と輝く未来が広がっています。自分自身の本質を信じ、心の声に従って進んでいきましょう。あなたの歩む道は、確かな光で照らされています。`;
+}
+
+// ===== 星アイコン =====
+function renderStars(count, max = 5) {
+  return Array.from({ length: max }, (_, i) =>
+    `<span class="star-icon${i < count ? '' : ' empty'}">★</span>`
+  ).join('');
+}
+
+// ===== 結果レンダリング =====
+function renderResult(dateStr, gender) {
+  const { mainNum, subNum } = calcPersonalCard(dateStr);
+  const mainCard = getArcana(mainNum);
+  const subCard = subNum !== null ? getArcana(subNum) : null;
+
+  // バッジ
+  const dateObj = new Date(dateStr + 'T00:00:00');
+  const fmt = `${dateObj.getFullYear()}年${dateObj.getMonth()+1}月${dateObj.getDate()}日`;
+  document.getElementById('resultBadge').textContent = `${fmt} ✦ 鑑定結果`;
+
+  // 運気カード
+  const fortunes = generateFortuneData(mainCard, subCard, gender);
+  const fortuneGrid = document.getElementById('fortuneGrid');
+  fortuneGrid.innerHTML = fortunes.map(f => `
+    <div class="fortune-card">
+      <div class="fortune-card-glow" style="background:${f.glowColor}"></div>
+      <span class="fortune-icon">${f.icon}</span>
+      <div class="fortune-label">${f.sublabel}</div>
+      <div class="fortune-title">${f.label}</div>
+      <div class="fortune-subtitle">${f.sublabel}</div>
+      <div class="stars-rating">${renderStars(f.stars)}</div>
+      <div class="fortune-divider"></div>
+      <p class="fortune-text">${f.text}</p>
+    </div>
+  `).join('');
+
+  // タロットカード表示
+  const display = document.getElementById('tarotCardsDisplay');
+  const mainCardHTML = `
+    <div class="tarot-card main-card">
+      <div class="tarot-card-inner">
+        <span class="card-roman">${mainCard.num}</span>
+        <span class="card-glyph" style="color:${mainCard.color}">${mainCard.glyph}</span>
+        <div>
+          <div class="card-name-jp">${mainCard.jp}</div>
+          <div class="card-name-en">${mainCard.en}</div>
+        </div>
+      </div>
+      <div class="card-role-badge">Personal Card</div>
+    </div>
+  `;
+
+  const subCardHTML = subCard ? `
+    <div class="tarot-card sub-card" style="margin-bottom: 20px;">
+      <div class="tarot-card-inner">
+        <span class="card-roman">${subCard.num}</span>
+        <span class="card-glyph" style="color:${subCard.color}">${subCard.glyph}</span>
+        <div>
+          <div class="card-name-jp">${subCard.jp}</div>
+          <div class="card-name-en">${subCard.en}</div>
+        </div>
+      </div>
+      <div class="card-role-badge">Sub Card</div>
+    </div>
+  ` : '';
+
+  display.innerHTML = mainCardHTML + subCardHTML;
+
+  // カード説明
+  const desc = document.getElementById('personalCardDesc');
+  const descText = subCard
+    ? `あなたの本質は、<strong>${mainCard.keywords.slice(0,2).join('・')}</strong>を宿す「${mainCard.jp}」の魂です。一方で、現実の世界では「${subCard.jp}」が示す<strong>${subCard.keywords.slice(0,2).join('・')}</strong>という役割や使命も持ち合わせています。この二つの力が調和したとき、あなたの本来の輝きが花開きます。`
+    : `あなたの本質は、<strong>${mainCard.keywords.slice(0,3).join('・')}</strong>を宿す「${mainCard.jp}」の魂です。この力を信じて歩んでいくとき、あなたの本来の輝きが花開いていきます。`;
+  desc.innerHTML = `<p>${descText}</p>`;
+
+  // 長所・短所・注意点
+  const traits = generateTraits(mainCard, subCard);
+  const traitsGrid = document.getElementById('traitsGrid');
+  traitsGrid.innerHTML = `
+    <div class="trait-panel strength">
+      <div class="trait-header">
+        <span class="trait-icon">💎</span>
+        <span class="trait-title">長所</span>
+      </div>
+      <ul class="trait-list">
+        ${traits.strengths.map(t => `<li>${t}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="trait-panel weakness">
+      <div class="trait-header">
+        <span class="trait-icon">🌑</span>
+        <span class="trait-title">短所</span>
+      </div>
+      <ul class="trait-list">
+        ${traits.weaknesses.map(t => `<li>${t}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="trait-panel caution">
+      <div class="trait-header">
+        <span class="trait-icon">✦</span>
+        <span class="trait-title">注意点</span>
+      </div>
+      <ul class="trait-list">
+        ${traits.cautions.map(t => `<li>${t}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+
+  // 総合メッセージ
+  const finalMsg = document.getElementById('finalMessage');
+  finalMsg.innerHTML = `
+    <span class="final-message-label">Final Message · 総合メッセージ</span>
+    <span class="final-message-icon">🌟</span>
+    <p>「${generateFinalMessage(mainCard, subCard)}」</p>
+  `;
+}
+
+// ===== フォーム送信 =====
+document.getElementById('tarotForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const dateStr = document.getElementById('birthdate').value;
+  const gender = document.querySelector('input[name="gender"]:checked')?.value || 'neutral';
+  const errEl = document.getElementById('errorMsg');
+
+  if (!dateStr) {
+    errEl.textContent = '生年月日を入力してください。';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  // ローディング
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('active');
+
+  setTimeout(() => {
+    renderResult(dateStr, gender);
+
+    overlay.classList.remove('active');
+
+    const resultArea = document.getElementById('result-area');
+    resultArea.style.display = 'block';
+
+    // フェードイン
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resultArea.classList.add('animated');
+        setTimeout(() => {
+          resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+      });
+    });
+  }, 1800);
+});
+</script>
+</body>
+</html>
